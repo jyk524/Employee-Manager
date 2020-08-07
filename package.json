@@ -1,14 +1,21 @@
 {
-  "name": "HW11-First-SQL",
+  "name": "hw11-first-sql",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jyk524/Employee-Manager.git"
+  },
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jyk524/Employee-Manager/issues"
+  },
+  "homepage": "https://github.com/jyk524/Employee-Manager#readme",
   "dependencies": {
     "inquirer": "^7.3.3",
     "mysql": "^2.18.1"
