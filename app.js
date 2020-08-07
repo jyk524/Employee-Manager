@@ -13,6 +13,7 @@ var connection = mysql.createConnection({
   // Your password
   password: "Cbc2020!",
   database: "employeesDB",
+  multipleStatements: true,
 });
 
 connection.connect(function (err) {
@@ -51,9 +52,9 @@ function start() {
         case "view all the employees":
           viewAllEmployees();
           break;
-        case "view all employees by roles":
-          viewAllEmployeesByRoles();
-          break;
+        // case "view all employees by roles":
+        //   viewAllEmployeesByRoles();
+        //   break;
         case "view all employees by department":
           viewAllEmployeesByDepartment();
           break;
@@ -67,7 +68,7 @@ function start() {
           addDepartment();
           break;
         case "update employee roles":
-          updateEmployee();
+          updateEmpRole();
           break;
         default:
           connection.end();
@@ -97,41 +98,41 @@ function viewAllEmployees() {
   start();
 }
 
-function viewAllEmployeesByRoles() {
-  let rolesArray = [];
-  connection.query("SELECT * FROM roles", function (err, res) {
-    if (err) throw err;
-    for (var i = 0; i < res.length; i++) {
-      rolesArray.push(res[i].title);
-    }
-    console.log(rolesArray);
-    inquirer
-      .prompt([
-        {
-          type: "list",
-          message: "Which roles of employees do you want to see?",
-          choices: rolesArray,
-          name: "roles",
-        },
-      ])
-      .then((answer) => {
-        const rolesChoice = answer.roles;
-        console.log(rolesChoice);
-        connection.query("SELECT * FROM employee", (err, res) => {
-          if (err) throw err;
-          console.table(res);
-          const rolesName = [];
-          for (let i = 0; i < res.length; i++) {
-            if (res[i].title === rolesChoice) {
-              rolesName.push(res[i].first_name + " " + res[i].last_name);
-            }
-            console.log(rolesName);
-          }
-          start();
-        });
-      });
-  });
-}
+// function viewAllEmployeesByRoles() {
+//   let rolesArray = [];
+//   connection.query("SELECT * FROM roles", function (err, res) {
+//     if (err) throw err;
+//     for (var i = 0; i < res.length; i++) {
+//       rolesArray.push(res[i].title);
+//     }
+//     console.log(rolesArray);
+//     inquirer
+//       .prompt([
+//         {
+//           type: "list",
+//           message: "Which roles of employees do you want to see?",
+//           choices: rolesArray,
+//           name: "roles",
+//         },
+//       ])
+//       .then((answer) => {
+//         const rolesChoice = answer.roles;
+//         console.log(rolesChoice);
+//         connection.query("SELECT * FROM employee", (err, res) => {
+//           if (err) throw err;
+//           console.table(res);
+//           const rolesName = [];
+//           for (let i = 0; i < res.length; i++) {
+//             if (res[i].title === rolesChoice) {
+//               rolesName.push(res[i].first_name + " " + res[i].last_name);
+//             }
+//             console.log(rolesName);
+//           }
+//           start();
+//         });
+//       });
+//   });
+// }
 // ADD EMPLOYEE========================================================================
 function addEmployee() {
   // Questions being asked for the user
@@ -233,23 +234,47 @@ function addDepartment() {
 }
 
 // UPDATE
-function updateEmployee() {
-  console.log("Updating Employees\n");
-  var query = connection.query(
-    "UPDATE employees SET ? WHERE ? ",
-    [
-      {
-        quantity: 100,
-      },
-      {
-        flavor: "Rocky Road",
-      },
-    ],
-    function (err, res) {
-      if (err) throw err;
-      console.log(res.affectedRows + " products updated!\n");
-      // Call deleteProduct AFTER the UPDATE completes
-      deleteProduct();
+function updateEmpRole() {
+  // create employee and role array
+  let employeeArray = [];
+  let roleArray = [];
+  connection.query("SELECT id,title FROM roles ORDER BY title ASC", function (
+    err,
+    res
+  ) {
+    if (err) throw err;
+    for (i = 0; i < res.length; i++) {
+      roleArray.push(res[i].title);
     }
-  );
+    connection.query(
+      "SELECT employee.id, concat(employee.first_name, employee.last_name) AS Employee FROM employee ORDER BY employee ASC",
+      function (err, res) {
+        if (err) throw err;
+
+        for (i = 0; i < res.length; i++) {
+          employeeArray.push(res[i].employee);
+        }
+        inquirer
+          .prompt([
+            {
+              name: "role",
+              type: "list",
+              message: "What is this new role?",
+              choices: roleArray,
+            },
+            {
+              name: "employee",
+              type: "list",
+              message: "What employee would you like to edit?",
+              choices: employeeArray,
+            },
+          ])
+          .then((answer) => {
+            connection.query(
+              `UPDATE employee SET roles_id = ${answer.role} WHERE id = ${answer.employee}`
+            );
+          });
+      }
+    );
+  });
 }
