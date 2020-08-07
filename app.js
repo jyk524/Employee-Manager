@@ -33,8 +33,6 @@ function start() {
         "view all the roles",
         "view all the departments",
         "view all the employees",
-        "view employees by roles",
-        "view employees by department",
         "add employee",
         "add roles",
         "add department",
@@ -245,11 +243,11 @@ function updateEmpRole() {
   ) {
     if (err) throw err;
     for (i = 0; i < res.length; i++) {
-      roleArray.push(res[i].title);
+      roleArray.push(res[i].id);
     }
 
     connection.query(
-      "SELECT employee.id, employee.first_name, employee.last_name AS Employee FROM employee ORDER BY employee ASC",
+      "SELECT employee.id, concat(employee.first_name, employee.last_name) AS Employee FROM employee ORDER BY employee ASC",
       function (err, res) {
         if (err) throw err;
 
@@ -262,7 +260,8 @@ function updateEmpRole() {
             {
               name: "role",
               type: "list",
-              message: "What is this new role?",
+              message:
+                "What is this new role? 1. Cashier, 2. Manager, 3. Talent, 4. Janitor",
               choices: roleArray,
             },
             {
@@ -273,9 +272,11 @@ function updateEmpRole() {
             },
           ])
           .then((answer) => {
-            connection.query(
-              `UPDATE employee SET roles_id = ${answer.role} WHERE id = ${answer.employee.id}`
-            );
+            connection.query("UPDATE employee SET ? WHERE ?", [
+              {
+                roles_id: roleArray,
+              },
+            ]);
           })
           .catch((err) => console.log(err));
       }
