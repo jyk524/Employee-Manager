@@ -238,6 +238,7 @@ function updateEmpRole() {
   // create employee and role array
   let employeeArray = [];
   let roleArray = [];
+
   connection.query("SELECT id,title FROM roles ORDER BY title ASC", function (
     err,
     res
@@ -246,14 +247,16 @@ function updateEmpRole() {
     for (i = 0; i < res.length; i++) {
       roleArray.push(res[i].title);
     }
+
     connection.query(
-      "SELECT employee.id, concat(employee.first_name, employee.last_name) AS Employee FROM employee ORDER BY employee ASC",
+      "SELECT employee.id, employee.first_name, employee.last_name AS Employee FROM employee ORDER BY employee ASC",
       function (err, res) {
         if (err) throw err;
 
         for (i = 0; i < res.length; i++) {
-          employeeArray.push(res[i].employee);
+          employeeArray.push(res[i].Employee);
         }
+
         inquirer
           .prompt([
             {
@@ -271,9 +274,10 @@ function updateEmpRole() {
           ])
           .then((answer) => {
             connection.query(
-              `UPDATE employee SET roles_id = ${answer.role} WHERE id = ${answer.employee}`
+              `UPDATE employee SET roles_id = ${answer.role} WHERE id = ${answer.employee.id}`
             );
-          });
+          })
+          .catch((err) => console.log(err));
       }
     );
   });
